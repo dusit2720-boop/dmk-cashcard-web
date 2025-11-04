@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <!-- (FIX) เพิ่มบรรทัดนี้เพื่อให้แสดงผลบนมือถือถูกต้อง -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMK ระบบตรวจสอบการขาย Cash Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    /* สไตล์สำหรับซ่อน/แสดงหน้า */
+    .page-hidden {
+      display: none;
+    }
+    
+    /* สไตล์สำหรับ Loading Spinner */
+    .loader {
+      border-top-color: #3498db;
+      -webkit-animation: spinner 1.5s linear infinite;
+      animation: spinner 1.5s linear infinite;
+    }
+
+    @-webkit-keyframes spinner {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spinner {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- พื้นหลังทั้งหมด -->
+  <div class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- หน้า Login (เริ่มต้น) -->
+    <div id="login-page" class="w-full max-w-lg">
+      <div class="bg-white p-8 md:p-10 rounded-lg shadow-lg">
+        
+        <div class="text-center mb-6">
+          <img src="https://placehold.co/100x100/3182CE/FFFFFF?text=DMK" alt="Logo" class="w-20 h-20 mx-auto mb-4 rounded-full">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-700">DMK ระบบตรวจสอบการขาย Cash Card</h1>
+          <p class="text-gray-500 mt-2">กรุณาเข้าสู่ระบบเพื่อตรวจสอบข้อมูล</p>
+        </div>
+
+        <!-- ฟอร์ม Login -->
+        <form id="login-form">
+          <div class="mb-5">
+            <label for="employeeId" class="block mb-2 text-sm font-medium text-gray-600">ID พนักงาน</label>
+            <input type="text" id="employeeId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="กรอก ID พนักงาน" required>
+          </div>
+          <div class="mb-6">
+            <label for="password" class="block mb-2 text-sm font-medium text-gray-600">รหัสผ่าน (ปีเกิดใช้ ค.ศ.+เดือนเกิด เช่น 198701)</label>
+            <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="กรอกรหัสผ่าน 6 หลัก" required>
+          </div>
+
+          <button type="submit" id="login-button" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200">
+            เข้าสู่ระบบ
+          </button>
+        </form>
+
+        <!-- แสดงข้อความ Error -->
+        <div id="login-error" class="mt-4 text-center text-red-600 font-medium page-hidden">
+          <!-- ข้อความจะถูกใส่โดย JavaScript -->
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- หน้าแสดงข้อมูล (ซ่อนไว้) -->
+    <div id="data-page" class="w-full max-w-2xl page-hidden">
+      <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+
+        <!-- ส่วนหัว -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold text-gray-700">ข้อมูลยอดขาย Cash card ของคุณ</h1>
+            <p class="text-gray-500 text-sm">พนักงาน: <span id="employee-name" class="font-medium">...</span></p>
+          </div>
+          <button id="logout-button" class="text-sm bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200">
+            ออกจากระบบ
+          </button>
+        </div>
+
+        <!-- ส่วนแสดงข้อมูล -->
+        <div id="data-content">
+          <!-- ตารางข้อมูลยอดขาย (ส่วนของเดือน) -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">ยอดขาย (รายการ)</h3>
+            <!-- เพิ่ม overflow-x-auto สำหรับมือถือ ถ้าตารางล้น -->
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      เดือน
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      จำนวน (รายการ)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="sales-table-body" class="bg-white divide-y divide-gray-200">
+                  <!-- ข้อมูลเดือนจะถูกสร้างโดย JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ส่วนยอดรวมอื่นๆ -->
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">สรุปยอดรวม</h3>
+            <div classs="space-y-3">
+              <div class="flex justify-between items-center text-gray-800">
+                <p class="text-sm font-medium text-gray-600">ข้อมูลจากช่อง Sales Staff ในใบเสร็จ:</p>
+                <p class="text-lg font-bold text-blue-600"><span id="total-from-id-sale">0</span> รายการ</p>
+              </div>
+              <div class="flex justify-between items-center text-gray-800 mt-2">
+                <p class="text-sm font-medium text-gray-600">ยอดจำนวนรายการทั้งหมด (ทุกเดือน):</p>
+                <p class="text-lg font-bold text-blue-600"><span id="total-items">0</span> รายการ</p>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- end data-content -->
+
+        <!-- ส่วนยืนยันข้อมูล -->
+        <div id="confirmation-section" class="mt-8 pt-6 border-t">
+          <!-- จะแสดงปุ่ม หรือ ข้อความยืนยันแล้ว -->
+        </div>
+        
+        <!-- Loading Spinner (ซ่อนไว้) -->
+        <div id="loading-spinner" class="page-hidden text-center py-10">
+          <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div>
+          <p class="mt-4 text-gray-500">กำลังโหลดข้อมูล...</p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // (Import)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      signInWithEmailAndPassword, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      onSnapshot, 
+      updateDoc, 
+      serverTimestamp, 
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- (ต้องตั้งค่า) Firebase Config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCl-1kUPk7YP0AZoKqVs9d_Z7vWeXytQnk",
+      authDomain: "dmk-cashcard-2025.firebaseapp.com",
+      projectId: "dmk-cashcard-2025",
+      storageBucket: "dmk-cashcard-2025.firebasestorage.app",
+      messagingSenderId: "769501660953",
+      appId: "1:769501660953:web:05daed34647bd3abd3e788",
+      measurementId: "G-BFE7G2G7C3"
+    };
+
+    // --- (ต้องตั้งค่า) ID ของแอป ---
+    // (ต้องตรงกับ APP_ID ใน App Script และ Security Rules)
+    const APP_ID = "dmk-cashcard-2025-app";
+    // ---
+
+    // (Initialize)
+    let app, auth, db;
+    let currentUserId = null;
+    let unsubscribeIncome = null; // ตัวหยุดการ "ฟัง" ข้อมูล
+
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    // (Get Elements)
+    const loginPage = document.getElementById('login-page');
+    const dataPage = document.getElementById('data-page');
+    const loginForm = document.getElementById('login-form');
+    const loginButton = document.getElementById('login-button');
+    const loginError = document.getElementById('login-error');
+    const employeeIdInput = document.getElementById('employeeId');
+    const passwordInput = document.getElementById('password');
+    const logoutButton = document.getElementById('logout-button');
+    const employeeNameEl = document.getElementById('employee-name');
+    const salesTableBody = document.getElementById('sales-table-body');
+    const totalFromIdSaleEl = document.getElementById('total-from-id-sale');
+    const totalItemsEl = document.getElementById('total-items');
+    const confirmationSection = document.getElementById('confirmation-section');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const dataContent = document.getElementById('data-content');
+
+    // (Helper Functions)
+    function showPage(pageToShow) {
+      loginPage.classList.add('page-hidden');
+      dataPage.classList.add('page-hidden');
+      if (pageToShow === 'login') {
+        loginPage.classList.remove('page-hidden');
+      } else if (pageToShow === 'data') {
+        dataPage.classList.remove('page-hidden');
+      }
+    }
+
+    function showLoading(isLoading) {
+      if (isLoading) {
+        dataContent.classList.add('page-hidden');
+        loadingSpinner.classList.remove('page-hidden');
+      } else {
+        dataContent.classList.remove('page-hidden');
+        loadingSpinner.classList.add('page-hidden');
+      }
+    }
+
+    function setLoginError(message) {
+      if (message) {
+        loginError.textContent = message;
+        loginError.classList.remove('page-hidden');
+      } else {
+        loginError.classList.add('page-hidden');
+      }
+    }
+
+    /**
+     * (Core) ฟังก์ชัน Login (ใช้ Firebase Auth)
+     */
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setLoginError(null);
+      loginButton.disabled = true;
+      loginButton.textContent = 'กำลังตรวจสอบ...';
+
+      const employeeId = employeeIdInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      // (สำคัญ) แปลง ID พนักงาน เป็น Email ที่ใช้ใน Firebase Auth
+      const email = `${employeeId}@company.demo`;
+
+      try {
+        // (ระบบใหม่) ใช้ Firebase Authentication โดยตรง
+        await signInWithEmailAndPassword(auth, email, password);
+        // (สำเร็จ) onAuthStateChanged จะทำงานต่อเอง
+        
+      } catch (error) {
+        console.error("Firebase Login Error:", error.code);
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          setLoginError('ID พนักงาน หรือ รหัสผ่าน (ปีเกิดใช้ ค.ศ.+เดือนเกิด เช่น 198701) ไม่ถูกต้อง');
+        } else {
+          setLoginError('พบข้อผิดพลาดในการ Login: ' + error.code);
+        }
+        loginButton.disabled = false;
+        loginButton.textContent = 'เข้าสู่ระบบ';
+      }
+    });
+
+    /**
+     * (Core) ฟังก์ชัน Logout
+     */
+    logoutButton.addEventListener('click', async () => {
+      await signOut(auth);
+      // onAuthStateChanged จะทำงานต่อเอง
+    });
+
+    /**
+     * (Core) ตัวจัดการสถานะ Login
+     * นี่คือฟังก์ชันหลักที่ควบคุมทุกอย่าง
+     */
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // --- (ผู้ใช้ Login แล้ว) ---
+        showPage('data');
+        showLoading(true); // เริ่มหมุน
+        
+        // (สำคัญ) ดึง ID พนักงานจากอีเมล
+        currentUserId = user.email.split('@')[0];
+        
+        // (สำคัญ) เริ่ม "ฟัง" (Subscribe) ข้อมูลของพนักงานคนนี้
+        listenToIncomeData(currentUserId);
+        
+      } else {
+        // --- (ผู้ใช้ Logout แล้ว) ---
+        showPage('login');
+        currentUserId = null;
+        // หยุด "ฟัง" ข้อมูล
+        if (unsubscribeIncome) {
+          unsubscribeIncome();
+        }
+        // เคลียร์ฟอร์ม
+        loginForm.reset();
+        loginButton.disabled = false;
+        loginButton.textContent = 'เข้าสู่ระบบ';
+        salesTableBody.innerHTML = ''; // ล้างตาราง
+        confirmationSection.innerHTML = ''; // ล้างปุ่มยืนยัน
+      }
+    });
+
+    /**
+     * (Data) เริ่ม "ฟัง" ข้อมูลจาก Firestore
+     */
+    function listenToIncomeData(employeeId) {
+      // (สำคัญ) สร้าง "เส้นทาง" (Path) ไปยัง "แฟ้ม" (Document) ข้อมูล
+      const docPath = `artifacts/${APP_ID}/salesData/${employeeId}`;
+      const docRef = doc(db, docPath);
+
+      // (สำคัญ) หยุด "ฟัง" อันเก่า (ถ้ามี)
+      if (unsubscribeIncome) {
+        unsubscribeIncome();
+      }
+
+      unsubscribeIncome = onSnapshot(docRef, (docSnap) => {
+        showLoading(false); // หยุดหมุน
+        
+        if (docSnap.exists()) {
+          // --- (พบข้อมูล) ---
+          const data = docSnap.data();
+          displayIncomeData(data); // แสดงข้อมูล
+          updateConfirmationUI(data, docRef); // แสดงปุ่ม/สถานะยืนยัน
+        } else {
+          // --- (ไม่พบข้อมูล) ---
+          console.warn(`ไม่พบข้อมูลที่ Path: ${docPath}`);
+          displayNoData();
+        }
+      }, (error) => {
+        console.error("Error listening to document:", error);
+        showLoading(false);
+        displayNoData("เกิดข้อผิดพลาดในการดึงข้อมูล");
+      });
+    }
+
+    /**
+     * (UI) แสดงข้อมูลบนหน้าเว็บ
+     */
+    function displayIncomeData(data) {
+      // (1) แสดงชื่อ
+      employeeNameEl.textContent = data.name || 'ไม่พบชื่อ';
+
+      // (2) แสดงตารางเดือน (อ่านจาก Array ที่เรียงลำดับแล้ว)
+      salesTableBody.innerHTML = ''; // ล้างตารางเก่า
+      
+      // (แก้ไข) ใช้ .salesMonths (Array) แทน .salesData (Object)
+      const salesMonths = data.salesMonths || [];
+      
+      if (salesMonths.length > 0) {
+        salesMonths.forEach(monthData => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              ${monthData.month}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+              ${Math.round(monthData.value)}
+            </td>
+          `;
+          salesTableBody.appendChild(row);
+        });
+      } else {
+        // กรณีไม่มีข้อมูลเดือน
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+            ไม่พบข้อมูลยอดขายรายเดือน
+          </td>
+        `;
+        salesTableBody.appendChild(row);
+      }
+
+      // (3) แสดงยอดรวม
+      totalFromIdSaleEl.textContent = Math.round(data.totalFromIdSale || 0);
+      totalItemsEl.textContent = Math.round(data.totalItems || 0);
+    }
+
+    /**
+     * (UI) แสดงผลกรณีไม่พบข้อมูล
+     */
+    function displayNoData(message = "ไม่พบข้อมูลการขายของคุณ กรุณาติดต่อ Admin เพื่อซิงค์ข้อมูล") {
+      employeeNameEl.textContent = 'N/A';
+      salesTableBody.innerHTML = `
+        <tr>
+          <td colspan="2" class="px-6 py-4 text-center text-gray-500">${message}</td>
+        </tr>
+      `;
+      totalFromIdSaleEl.textContent = '0';
+      totalItemsEl.textContent = '0';
+      confirmationSection.innerHTML = ''; // ไม่มีอะไรให้ยืนยัน
+    }
+
+    /**
+     * (UI) อัปเดตส่วนยืนยัน (ปุ่ม หรือ ข้อความ)
+     */
+    function updateConfirmationUI(data, docRef) {
+      if (data.confirmedAt) {
+        // --- (ยืนยันแล้ว) ---
+        const confirmedDate = new Date(data.confirmedAt.seconds * 1000);
+        confirmationSection.innerHTML = `
+          <div class="text-center p-4 bg-green-100 border border-green-300 rounded-lg">
+            <h4 class="font-semibold text-green-800">ยืนยันข้อมูลแล้ว</h4>
+            <p class="text-sm text-green-700">
+              เมื่อวันที่: ${confirmedDate.toLocaleString('th-TH')}
+            </p>
+          </div>
+        `;
+      } else {
+        // --- (ยังไม่ยืนยัน) ---
+        confirmationSection.innerHTML = `
+          <h4 class="text-lg font-semibold text-gray-700 mb-3 text-center">ยืนยันการตรวจสอบข้อมูล</h4>
+          <p class="text-sm text-gray-500 text-center mb-4">
+            ข้าพเจ้ายืนยันว่าข้อมูลยอดขายข้างต้นถูกต้องครบถ้วน
+          </p>
+          <button id="confirm-button" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition duration-200">
+            คลิกเพื่อยืนยันข้อมูล
+          </button>
+        `;
+
+        // (สำคัญ) เพิ่ม Event Listener ให้ปุ่มที่เพิ่งสร้าง
+        document.getElementById('confirm-button').addEventListener('click', async () => {
+          const btn = document.getElementById('confirm-button');
+          btn.disabled = true;
+          btn.textContent = 'กำลังบันทึก...';
+
+          try {
+            // (สำคัญ) อัปเดต "แฟ้ม" (Document) ด้วยเวลาปัจจุบัน
+            await updateDoc(docRef, {
+              confirmedAt: serverTimestamp() // ใช้เวลาของเซิร์ฟเวอร์
+            });
+            // (สำเร็จ) onSnapshot จะทำงานอีกครั้งและเปลี่ยน UI เอง
+          } catch (error) {
+            console.error("Error confirming data:", error);
+            btn.disabled = false;
+            btn.textContent = 'คลิกเพื่อยืนยันข้อมูล';
+            alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+          }
+        });
+      }
+    }
+
+  </script>
+
+</body>
+</html>
