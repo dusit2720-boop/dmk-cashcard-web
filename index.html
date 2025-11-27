@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMK ระบบตรวจสอบค่าเสียหายและรายได้</title>
+    <title>ระบบตรวจสอบค่าเสียหายและรายได้</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
                 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">DMK ระบบตรวจสอบค่าเสียหายและรายได้</h1>
+                <h1 class="text-2xl font-bold text-gray-800">ระบบตรวจสอบ</h1>
                 <p class="text-gray-500 text-sm mt-1">DMK Tracking System</p>
             </div>
             
@@ -66,20 +66,40 @@
         <!-- Content -->
         <div class="container mx-auto p-4 max-w-2xl mt-4 space-y-6">
             
-            <!-- 1. TOTAL SUMMARY CARD (ยอดรวมทั้งหมด) -->
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-6 text-white relative overflow-hidden">
+            <!-- 1. TOTAL SUMMARY CARD (All-time Breakdown) -->
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg p-5 text-white relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
-                <h2 class="text-sm font-medium opacity-90 mb-2 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    ยอดคงเหลือที่ต้องชำระ (ทั้งหมด)
+                
+                <h2 class="text-sm font-medium opacity-90 mb-4 flex items-center gap-2 border-b border-white/20 pb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    ยอดสะสมทั้งหมด (All-time)
                 </h2>
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-                    <p class="text-4xl font-bold tracking-tight"><span id="total-balance">0</span> <span class="text-lg font-normal opacity-80">บาท</span></p>
-                    <div class="text-left sm:text-right text-sm bg-white/10 p-2 rounded-lg w-full sm:w-auto">
-                        <p>Credit สะสม: <span id="total-credit" class="font-bold">0</span></p>
-                        <p>คืนแล้วสะสม: <span id="total-refund" class="font-bold">0</span></p>
+
+                <!-- Grid แสดง 3 หัวข้อ -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                    <!-- Short Cash -->
+                    <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <p class="text-xs opacity-75 mb-1 uppercase tracking-wider">Short Cash</p>
+                        <p class="text-2xl font-bold"><span id="total-cash">0</span></p>
+                        <p class="text-xs opacity-60">บาท</p>
+                    </div>
+
+                    <!-- Short Credit -->
+                    <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <p class="text-xs opacity-75 mb-1 uppercase tracking-wider">Short Credit</p>
+                        <p class="text-2xl font-bold"><span id="total-credit">0</span></p>
+                        <p class="text-xs opacity-60">บาท</p>
+                    </div>
+
+                    <!-- Refund -->
+                    <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                        <p class="text-xs opacity-75 mb-1 uppercase tracking-wider">Refund</p>
+                        <p class="text-2xl font-bold"><span id="total-refund">0</span></p>
+                        <p class="text-xs opacity-60">บาท</p>
                     </div>
                 </div>
+                
+                <!-- ตัดยอดคงเหลือรวมออกตามที่ขอ -->
             </div>
 
             <!-- 2. Month Filter -->
@@ -96,11 +116,11 @@
                 <!-- Grid for Cash & Credit -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ค่าเสียหาย Short Cash</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">1.1 ค่าเสียหาย Short Cash</h3>
                         <p class="text-2xl font-bold text-gray-800 mt-1"><span id="val-short-cash">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ค่าเสียหาย Short Credit</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">1.2 ค่าเสียหาย Short Credit</h3>
                         <p class="text-2xl font-bold text-gray-800 mt-1"><span id="val-short-credit">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                     </div>
                 </div>
@@ -108,13 +128,10 @@
                 <!-- Refund Card with Verification -->
                 <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-5 border-l-4 border-green-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ยอดเงินคืนเดือนนี้ (Refund)</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">2. ยอดเงินคืนเดือนนี้ (Refund)</h3>
                         <p class="text-3xl font-bold text-green-600 mt-1"><span id="val-refund">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                         
-                        <div class="mt-4 pt-4 border-t border-dashed flex justify-between items-center">
-                            <span class="text-gray-500 text-sm">คงเหลือเฉพาะเดือนนี้:</span>
-                            <span class="font-bold text-gray-800 text-lg" id="val-month-balance">0 บาท</span>
-                        </div>
+                        <!-- ตัดยอดคงเหลือรายเดือนออกตามที่ขอ -->
                     </div>
                     
                     <!-- Verification Section -->
@@ -156,7 +173,7 @@
             
             <!-- No Data State -->
             <div id="no-data" class="text-center py-12 hidden bg-white rounded-xl border-2 border-dashed border-gray-200">
-                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 <p class="text-gray-500 font-medium">ไม่พบข้อมูลของเดือนนี้</p>
                 <p class="text-gray-400 text-xs mt-2 font-mono bg-gray-100 inline-block px-2 py-1 rounded" id="debug-path">Path: ...</p>
                 <p class="text-gray-400 text-xs mt-2">กรุณาตรวจสอบว่า Admin ได้กดซิงค์ข้อมูลแล้ว</p>
@@ -223,7 +240,9 @@
                     if (snap.exists()) {
                         const d = snap.data();
                         document.getElementById('user-info').textContent = `${d.name || empId} (${empId})`;
-                        updateVal('total-balance', d.totalBalance || 0);
+                        
+                        // อัปเดตยอดรวมทั้ง 3 รายการที่ Card บนสุด
+                        updateVal('total-cash', d.totalShortCash || 0);
                         updateVal('total-credit', d.totalShortCredit || 0);
                         updateVal('total-refund', d.totalRefund || 0);
                     } else {
@@ -272,12 +291,6 @@
                     updateVal('val-short-cash', data.shortCash || 0);
                     updateVal('val-short-credit', scr);
                     updateVal('val-refund', ref);
-                    
-                    // Balance เฉพาะเดือนนี้
-                    const monthBal = scr - ref;
-                    const balEl = document.getElementById('val-month-balance');
-                    balEl.textContent = monthBal.toLocaleString('th-TH', {minimumFractionDigits: 0}) + ' บาท';
-                    balEl.className = monthBal > 0 ? "font-bold text-lg text-red-600" : "font-bold text-lg text-green-600";
                     
                     // Render Verification UI
                     renderVerifyUI(data.status, data.confirmedAt);
@@ -336,7 +349,8 @@
         };
 
         function updateVal(id, num) {
-            document.getElementById(id).textContent = num.toLocaleString('th-TH', {minimumFractionDigits: 0});
+            const el = document.getElementById(id);
+            if(el) el.textContent = num.toLocaleString('th-TH', {minimumFractionDigits: 0});
         }
 
         // --- EVENTS ---
