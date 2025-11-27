@@ -30,8 +30,8 @@
                 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">DMK Tracking</h1>
-                <p class="text-gray-500 text-sm mt-1">ระบบตรวจสอบค่าเสียหายและรายได้</p>
+                <h1 class="text-2xl font-bold text-gray-800">ระบบตรวจสอบค่าเสียหายและรายได้</h1>
+                <p class="text-gray-500 text-sm mt-1">DMK Tracking</p>
             </div>
             
             <form id="login-form" class="space-y-5">
@@ -41,7 +41,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
-                    <input type="password" id="login-pass" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="กรอกรหัสผ่านของคุณ" required>
+                    <input type="password" id="login-pass" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="กรอกรหัสผ่าน" required>
+                    <p class="text-xs text-gray-400 mt-1">*ถ้ารหัสสั้น ระบบจะเติม 0 ต่อท้ายให้อัตโนมัติ</p>
                 </div>
                 <button type="submit" id="btn-login-submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">
                     เข้าสู่ระบบ
@@ -58,7 +59,7 @@
         <nav class="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-4 shadow-lg sticky top-0 z-10">
             <div class="container mx-auto max-w-2xl flex justify-between items-center">
                 <div>
-                    <h1 class="font-bold text-lg tracking-wide">DMK Tracking</h1>
+                    <h1 class="font-bold text-lg tracking-wide">ระบบตรวจสอบค่าเสียหายและรายได้</h1>
                     <div class="flex items-center text-xs text-blue-100 mt-0.5">
                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         <span id="user-info">กำลังโหลด...</span>
@@ -312,18 +313,46 @@
             errEl.classList.add('hidden');
 
             const id = document.getElementById('login-id').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
+            let pass = document.getElementById('login-pass').value.trim();
             
+            // --- แก้ไข: เติม 0 อัตโนมัติ ---
+            if (pass.length > 0 && pass.length < 6) {
+                while (pass.length < 6) {
+                    pass += '0';
+                }
+                console.log("Auto-padding password...");
+            }
+            // -------------------------
+
+            // --- แก้ไข: ป้องกันการค้าง (Timeout) ---
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 15000) // 15 วินาที
+            );
+
             try {
-                // Login directly with Firebase
-                await signInWithEmailAndPassword(auth, `${id}@company.demo`, pass);
-                // Success handled by onAuthStateChanged
+                await Promise.race([
+                    signInWithEmailAndPassword(auth, `${id}@company.demo`, pass),
+                    timeoutPromise
+                ]);
+                // ถ้าสำเร็จ onAuthStateChanged จะจัดการต่อ
             } catch (err) {
-                btn.disabled = false;
-                btn.innerText = "เข้าสู่ระบบ";
-                errEl.textContent = "ID หรือ รหัสผ่านไม่ถูกต้อง";
                 errEl.classList.remove('hidden');
-                console.error("Login fail", err);
+                
+                if (err.message === 'Timeout') {
+                    errEl.textContent = "การเชื่อมต่อใช้เวลานานผิดปกติ กรุณาตรวจสอบอินเทอร์เน็ต";
+                } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+                    errEl.textContent = "ID หรือ รหัสผ่านไม่ถูกต้อง (ถ้ารหัสสั้น ระบบจะเติม 0 ต่อท้ายให้อัตโนมัติ)";
+                } else if (err.code === 'auth/too-many-requests') {
+                    errEl.textContent = "ลองบ่อยเกินไป กรุณารอสักครู่";
+                } else {
+                    errEl.textContent = "เกิดข้อผิดพลาด: " + err.code;
+                }
+            } finally {
+                // --- แก้ไข: คืนค่าปุ่มเสมอ ---
+                if (!auth.currentUser) {
+                    btn.disabled = false;
+                    btn.innerText = "เข้าสู่ระบบ";
+                }
             }
         });
 
@@ -337,17 +366,10 @@
             loadData(e.target.value);
         });
 
-        // 4. Change Password Modal
+        // 4. Change Password Modal Logic
         const modal = document.getElementById('pass-modal');
-        
-        document.getElementById('btn-change-pass').addEventListener('click', () => {
-            modal.classList.remove('hidden');
-        });
-        
-        document.getElementById('btn-close-modal').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            document.getElementById('pass-form').reset();
-        });
+        document.getElementById('btn-change-pass').addEventListener('click', () => modal.classList.remove('hidden'));
+        document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.add('hidden'));
         
         document.getElementById('pass-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -359,7 +381,7 @@
 
             try {
                 await updatePassword(currentUser, newPass);
-                alert('เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบใหม่ด้วยรหัสผ่านใหม่');
+                alert('เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบใหม่');
                 modal.classList.add('hidden');
                 document.getElementById('pass-form').reset();
                 signOut(auth); // Logout user to force re-login with new pass
