@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMK ระบบตรวจสอบค่าเสียหายและรายได้</title>
+    <title>ระบบตรวจสอบค่าเสียหายและรายได้</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
                 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">DMK ระบบตรวจสอบค่าเสียหายและรายได้</h1>
+                <h1 class="text-2xl font-bold text-gray-800">ระบบตรวจสอบ</h1>
                 <p class="text-gray-500 text-sm mt-1">DMK Tracking System</p>
             </div>
             
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button id="btn-change-pass" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm transition backdrop-blur-sm">เปลี่ยนรหัสผ่าน</button>
+                    <button id="btn-change-pass" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm transition backdrop-blur-sm">รหัสผ่าน</button>
                     <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition shadow-sm">ออก</button>
                 </div>
             </div>
@@ -130,28 +130,27 @@
                 <input type="month" id="month-picker" class="border-gray-300 border p-2 rounded-lg w-full sm:w-auto flex-grow bg-gray-50 font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
 
-                
             <!-- 3. Monthly Data Cards -->
             <div id="data-content" class="space-y-4 hidden">
                 <!-- Grid for Cash & Credit -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ค่าเสียหาย Short Cash</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">1.1 ค่าเสียหาย Short Cash</h3>
                         <p class="text-2xl font-bold text-gray-800 mt-1"><span id="val-short-cash">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                     </div>
                     <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ค่าเสียหาย Short Credit</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">1.2 ค่าเสียหาย Short Credit</h3>
                         <p class="text-2xl font-bold text-gray-800 mt-1"><span id="val-short-credit">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                     </div>
                 </div>
-
                 
                 <!-- Refund Card with Verification -->
                 <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-5 border-l-4 border-green-500">
-                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">ยอดเงินคืนกรณีหักค่าเสียหาย Short Credit (Refund)</h3>
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wider">2. ยอดเงินคืนเดือนนี้ (Refund)</h3>
                         <p class="text-3xl font-bold text-green-600 mt-1"><span id="val-refund">0</span> <span class="text-sm text-gray-400 font-normal">บาท</span></p>
                     </div>
+                    
 
                     <!-- Verification Section -->
                     <div id="verify-section" class="bg-white px-5 py-4 border-t border-gray-200">
@@ -434,5 +433,3 @@
     </script>
 </body>
 </html>
-
-
